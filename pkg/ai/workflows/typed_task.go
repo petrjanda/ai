@@ -1,0 +1,55 @@
+package workflows
+
+import (
+	"context"
+
+	"github.com/getsynq/ai/pkg/ai"
+	"github.com/getsynq/ai/pkg/ai/tools"
+)
+
+// TypedWrapper expands on StructuredTask by providing a typed result.
+// It is a wrapper and due to typed output breaks Task interface.
+// It's a convenience wrapper that could be used as part of wider workflows,
+// exposing internal task that implements Task interface that can be used
+// in evals and other areas of code that demand Task interface.
+
+type TypedWrapper[T any] struct {
+	Inner *StructuredTask
+}
+
+func NewTypedTask[T any](name string, request *ai.LLMRequest, generator tools.SchemaGenerator) (*TypedWrapper[T], error) {
+	schema, err := generator.Generate(new(T))
+	if err != nil {
+		return nil, err
+	}
+
+	task := NewStructuredTask(name, schema, request)
+	return &TypedWrapper[T]{
+		Inner: task,
+	}, nil
+}
+
+func NewTypedWrapper[T any](task *StructuredTask) *TypedWrapper[T] {
+	return &TypedWrapper[T]{
+		Inner: task,
+	}
+}
+
+func (t *TypedWrapper[T]) Name() string {
+	return t.Inner.Name()
+}
+
+func (t *TypedWrapper[T]) Invoke(ctx context.Context, llm ai.LLM, history ai.History) (*T, error) {
+	response, err := t.Inner.Invoke(ctx, llm, history)
+	if err != nil {
+		return new(T), err
+	}
+
+	var result T
+	err = t.Inner.ParseResult(response, &result)
+	if err != nil {
+		return new(T), err
+	}
+
+	return &result, nil
+}
