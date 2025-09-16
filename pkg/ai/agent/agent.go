@@ -83,7 +83,6 @@ func (a *Agent) Invoke(ctx context.Context, request *ai.LLMRequest) (*ai.LLMResp
 			} else {
 				response.AddMessage(message)
 				a.totalUsage.AddToolCall(toolCall, nil)
-				a.events.OnToolResult(ctx, toolCall, message)
 			}
 		}
 

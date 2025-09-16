@@ -25,7 +25,7 @@ type Adapter[I, O any] struct {
 	generator SchemaGenerator
 }
 
-func NewAdapter[I, O any](generator SchemaGenerator, tool GoTool[I, O]) *Adapter[I, O] {
+func NewAdapter[I, O any](tool GoTool[I, O], generator SchemaGenerator) *Adapter[I, O] {
 	return &Adapter[I, O]{
 		tool:      tool,
 		generator: generator,

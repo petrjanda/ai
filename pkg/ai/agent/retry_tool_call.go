@@ -34,6 +34,7 @@ func (op *ToolCallOperation) Execute(ctx context.Context, attempt int) (ai.Messa
 		return nil, err
 	}
 
+	op.events.OnToolResult(ctx, op.toolCall, result)
 	return ai.NewToolResultMessage(op.toolCall, result), nil
 }
 

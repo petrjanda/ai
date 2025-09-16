@@ -2,6 +2,7 @@ package ai
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"log/slog"
@@ -21,7 +22,7 @@ type AgentEvents interface {
 
 	OnToolCall(ctx context.Context, toolCall *tools.ToolCall)
 	OnToolError(ctx context.Context, toolCall *tools.ToolCall, attempt int, err error)
-	OnToolResult(ctx context.Context, toolCall *tools.ToolCall, result Message)
+	OnToolResult(ctx context.Context, toolCall *tools.ToolCall, result json.RawMessage)
 }
 
 type NoopAgentEvents struct{}
@@ -37,7 +38,7 @@ func (e *NoopAgentEvents) OnRequestError(ctx context.Context, request *LLMReques
 func (e *NoopAgentEvents) OnToolError(ctx context.Context, toolCall *tools.ToolCall, attempt int, err error) {
 }
 func (e *NoopAgentEvents) OnToolCall(ctx context.Context, toolCall *tools.ToolCall) {}
-func (e *NoopAgentEvents) OnToolResult(ctx context.Context, toolCall *tools.ToolCall, result Message) {
+func (e *NoopAgentEvents) OnToolResult(ctx context.Context, toolCall *tools.ToolCall, result json.RawMessage) {
 }
 
 type LogAgentEvents struct {
@@ -89,8 +90,8 @@ func (e *LogAgentEvents) OnToolError(ctx context.Context, toolCall *tools.ToolCa
 	)
 }
 
-func (e *LogAgentEvents) OnToolResult(ctx context.Context, toolCall *tools.ToolCall, result Message) {
-	e.logger.Info("tool call result", "tool", toolCall.Name, "result", printMessage(result, false))
+func (e *LogAgentEvents) OnToolResult(ctx context.Context, toolCall *tools.ToolCall, result json.RawMessage) {
+	e.logger.Info("tool call result", "tool", toolCall.Name, "result", string(result))
 }
 
 func printMessage(message Message, textOnly bool) string {
