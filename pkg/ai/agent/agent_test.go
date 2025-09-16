@@ -35,9 +35,9 @@ type Res struct {
 	Response string `json:"response"`
 }
 
-var simpleTool = tools.NewSimpleTool("greet", "Greet someone",
+var greetTool = tools.NewSimpleTool("greet", "Greet someone",
 	func(ctx context.Context, input *Req) (*Res, error) {
-		return &Res{Response: "Hello, " + input.Name + "!"}, errors.New("test error")
+		return &Res{Response: "Hello, " + input.Name + "!"}, nil
 	},
 	openai.NewOpenAISchemaGenerator(),
 )
@@ -71,9 +71,57 @@ func (s *AgentSuite) TestAgent() {
 		ai.WithHistory(ai.NewHistory(
 			ai.NewUserMessage("Greet John"),
 		)),
-		ai.WithTools(simpleTool),
+		ai.WithTools(greetTool),
 	),
 	)
+
+	s.Require().NoError(err)
+	s.Require().NotNil(res)
+	s.Require().Equal(1, len(res.Messages))
+	s.Require().Equal(ai.NewAssistantMessage("Done."), res.Messages[0])
+}
+
+var greetFailingTool = tools.NewSimpleTool("greet", "Greet someone",
+	func(ctx context.Context, input *Req) (*Res, error) {
+		if input.Name == "John" {
+			return &Res{Response: "Hello, " + input.Name + "!"}, nil // On retry things will pass
+		}
+		return nil, errors.New("test error")
+	},
+	openai.NewOpenAISchemaGenerator(),
+)
+
+func (s *AgentSuite) TestAgentWithFailingTool() {
+	llm := NewMockLLM()
+	llm.
+		On("Invoke", mock.Anything, mock.Anything).
+		Return(ai.NewLLMResponse(
+			ai.NewToolCallMessage(tools.NewToolCall("1", "greet", json.RawMessage(`{"name": "Tom"}`))),
+		), nil).
+		Once()
+
+	// Retry call for tool correction (when tool fails)
+	llm.
+		On("Invoke", mock.Anything, mock.Anything).
+		Return(ai.NewLLMResponse(
+			ai.NewToolCallMessage(tools.NewToolCall("2", "formatter", json.RawMessage(`{"name": "John"}`))), // This will fix it
+		), nil).
+		Once()
+
+	// Second attempt after correction
+	llm.
+		On("Invoke", mock.Anything, mock.Anything).
+		Return(ai.NewLLMResponse(ai.NewAssistantMessage("Done.")), nil).
+		Once()
+
+	agent := NewAgent(llm, WithRetryConfig(structured.NewRetryConfig(string(ai.Claude4Sonnet), 2, 100*time.Millisecond, 2.0)))
+	res, err := agent.Invoke(context.Background(), ai.NewLLMRequest(
+		ai.WithModel(ai.Claude4Sonnet),
+		ai.WithHistory(ai.NewHistory(
+			ai.NewUserMessage("Greet Tom"),
+		)),
+		ai.WithTools(greetFailingTool),
+	))
 
 	s.Require().NoError(err)
 	s.Require().NotNil(res)
