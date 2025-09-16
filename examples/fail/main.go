@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
-	"os"
 	"time"
 
+	"github.com/getsynq/cloud/ai-data-sre/examples"
 	"github.com/getsynq/cloud/ai-data-sre/pkg/ai"
 	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/adapters/openai"
 	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/agent"
@@ -46,7 +46,7 @@ var tool = tools.NewSimpleTool("greet", "Greet someone",
 func main() {
 	godotenv.Load()
 
-	llm := GetLiteLLM()
+	llm := examples.GetLiteLLM()
 
 	agent := agent.NewAgent(llm,
 		agent.WithRetryConfig(structured.NewRetryConfig(string(ai.Claude4Sonnet), 1, 100*time.Millisecond, 2.0)),
@@ -66,20 +66,4 @@ func main() {
 	}
 
 	log.Printf("usage: %s", res.Usage)
-}
-
-func GetLiteLLM() ai.LLM {
-	// Get OpenAI API key from environment
-	apiKey := os.Getenv("OPENAI_API_KEY")
-	if apiKey == "" {
-		log.Fatal("OPENAI_API_KEY environment variable is required")
-	}
-
-	endpoint := os.Getenv("OPENAI_ENDPOINT")
-	if endpoint == "" {
-		endpoint = "https://api.openai.com/v1"
-	}
-
-	// Create OpenAI adapter
-	return openai.NewOpenAIAdapter(apiKey, openai.WithEndpoint(endpoint))
 }

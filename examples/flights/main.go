@@ -1,0 +1,187 @@
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+
+	"github.com/getsynq/cloud/ai-data-sre/examples"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/adapters/openai"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/agent"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/structured"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/tools"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/workflows"
+	"github.com/joho/godotenv"
+)
+
+// OpenAI Schema Generator
+var schemaGenerator = openai.NewOpenAISchemaGenerator()
+
+var logger = ai.NewJSONFileLogAgentEvents("log.json")
+
+// TYPES
+
+type Flight struct {
+	FlightNumber string `json:"flight_number"`
+	Price        int    `json:"price"`
+}
+
+type Booking struct {
+	ConfirmationNumber string `json:"confirmation_number"`
+	FlightNumber       string `json:"flight_number"`
+	Price              int    `json:"price"`
+	DepartureDate      string `json:"departure_date"`
+}
+
+type Itinerary struct {
+	Outbound Booking `json:"outbound" jsonschema:"required"`
+	Inbound  Booking `json:"inbound" jsonschema:"required"`
+}
+
+// SEARCH
+
+type SearchFlightsRequest struct {
+	Destination string `json:"destination" jsonschema:"required"`
+	Date        string `json:"date" jsonschema:"required"`
+}
+
+type SearchFlightsResponse struct {
+	Flights []Flight `json:"flights"`
+}
+
+var searchFlightsTool = tools.NewSimpleTool(
+	"SearchFlights",
+	"Searches for flights for the user",
+
+	func(ctx context.Context, args *SearchFlightsRequest) (*SearchFlightsResponse, error) {
+		return &SearchFlightsResponse{
+			Flights: []Flight{
+				{FlightNumber: "US23456", Price: 100},
+				{FlightNumber: "SK23456", Price: 200},
+			},
+		}, nil
+	},
+	schemaGenerator,
+)
+
+// BOOK
+
+type BookRequest struct {
+	FlightNumber string `json:"flight_number"`
+}
+
+type BookFlightTool struct {
+}
+
+func NewBookFlightTool() *BookFlightTool {
+	return &BookFlightTool{}
+}
+
+func (b *BookFlightTool) Name() string {
+	return "BookFlight"
+}
+
+func (b *BookFlightTool) Description() string {
+	return "Books a flight for the user"
+}
+
+func (b *BookFlightTool) InputSchemaRaw() json.RawMessage {
+	return schemaGenerator.MustGenerate(new(BookRequest))
+}
+
+func (b *BookFlightTool) Run(ctx context.Context, args *BookRequest) (*Booking, error) {
+	return &Booking{
+		ConfirmationNumber: "#ARK495",
+	}, nil
+}
+
+// AGENT
+
+var travelAgent = workflows.NewAgentTask(
+	"travel",
+	ai.NewLLMRequest(
+		ai.WithSystem(`
+			You search and book flights for a user.
+
+			User will provide a destination and dates of travel.
+
+			You will use the following tools to book the flight:
+			* BookFlight - books a flight for the user
+			* SearchFlights - searches for flights for the user
+
+			Each flight is separate which means there should be two confirmation numbers.
+
+			You should search flights and then book the cheapest 
+			one and return the confirmation numbers, flight numbers, departure dates and prices for outbound and inbound flights.
+		`),
+		ai.WithModel(ai.Gemini25Flash),
+		ai.WithTemperature(0.0),
+		ai.WithMaxCompletionTokens(1000),
+		ai.WithTools(tools.NewAdapter(NewBookFlightTool(), schemaGenerator), searchFlightsTool),
+	),
+	agent.WithEvents(logger),
+)
+
+// FINAL FORMATTER
+
+var formatter = workflows.NewStructuredTask(
+	"formatter",
+	schemaGenerator.MustGenerate(new(Itinerary)),
+	ai.NewLLMRequest(
+		ai.WithSystem(`
+			Format flight information into specific format.
+		`),
+		ai.WithModel(ai.Gemini25Flash),
+		ai.WithTemperature(0.0),
+	),
+	structured.WithAgentEvents(logger),
+)
+
+func bookFlights(ctx context.Context, litellm ai.LLM, prompt string) (*Itinerary, error) {
+	response, err := travelAgent.
+		Invoke(ctx, litellm, ai.NewHistory(
+			ai.NewUserMessage(prompt),
+		))
+
+	if err != nil {
+		return nil, err
+	}
+
+	return workflows.NewTypedWrapper[Itinerary](formatter).
+		Invoke(ctx, litellm, response.Messages)
+}
+
+func main() {
+	ctx := context.Background()
+	godotenv.Load()
+	litellm := examples.GetLiteLLM()
+
+	prompt := "I want to book a flight to Tokyo, 1st Oct and back 8th Oct"
+	confirmations, err := bookFlights(ctx, litellm, prompt)
+	if err != nil {
+		panic(err)
+	}
+
+	payload, err := json.MarshalIndent(confirmations, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+
+	// {
+	// 	"outbound": {
+	// 	  "confirmation_number": "#ARK495",
+	// 	  "flight_number": "US23456",
+	// 	  "price": 100,
+	// 	  "departure_date": "October 1st"
+	// 	},
+	// 	"inbound": {
+	// 	  "confirmation_number": "#ARK495",
+	// 	  "flight_number": "US23456",
+	// 	  "price": 100,
+	// 	  "departure_date": "October 8th"
+	// 	}
+	// }
+
+	fmt.Println(string(payload))
+}

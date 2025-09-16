@@ -1,1 +1,1 @@
-{"$schema":"https://json-schema.org/draft/2020-12/schema","properties":{"name":{"type":"string"}},"type":"object"}
+{"$schema":"https://json-schema.org/draft/2020-12/schema","properties":{"flight_number":{"type":"string"},"departure_time":{"type":"string"},"arrival_time":{"type":"string"},"departure_airport":{"type":"string"},"arrival_airport":{"type":"string"},"price":{"type":"integer"}},"type":"object","required":["flight_number","departure_time","arrival_time","departure_airport","arrival_airport","price"]}
