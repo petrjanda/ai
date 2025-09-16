@@ -216,7 +216,7 @@ func (s *StructuredRetriable) Retry(ctx context.Context, attempt int) (*ai.LLMRe
 		return nil, errors.Wrap(err, "structured output marshalling failed")
 	}
 
-	return response, nil
+	return ai.NewLLMResponse(ai.NewAssistantMessage(string(result))), nil
 }
 
 func (s *StructuredRetriable) OnFailure(ctx context.Context, attempt int, err error) error {

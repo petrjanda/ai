@@ -2,6 +2,8 @@ package workflows
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 
 	"github.com/getsynq/cloud/ai-data-sre/pkg/ai"
 	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/tools"
@@ -45,8 +47,13 @@ func (t *TypedWrapper[T]) Invoke(ctx context.Context, llm ai.LLM, history ai.His
 		return new(T), err
 	}
 
+	lastMessage := response.LastMessageAsText()
+	if lastMessage == nil {
+		return new(T), fmt.Errorf("last message is not a text message")
+	}
+
 	var result T
-	err = t.Inner.ParseResult(response, &result)
+	err = json.Unmarshal([]byte(lastMessage.Content), &result)
 	if err != nil {
 		return new(T), err
 	}

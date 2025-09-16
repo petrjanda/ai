@@ -62,8 +62,8 @@ func (t *StructuredTask) Invoke(ctx context.Context, llm ai.LLM, history ai.Hist
 	}
 
 	// Validate that the last message is text
-	lastMessage := response.Messages[len(response.Messages)-1]
-	if lastMessage.Kind() != ai.MessageKindText {
+	lastMessage := response.LastMessageAsText()
+	if lastMessage == nil {
 		return nil, fmt.Errorf("last message is not a text message")
 	}
 
@@ -87,21 +87,6 @@ func (t *StructuredTask) WithName(name string) Task {
 	new := t.Clone().(*StructuredTask)
 	new.Name_ = name
 	return new
-}
-
-// ParseResult parses the structured response into the target type
-func (t *StructuredTask) ParseResult(response *ai.LLMResponse, target interface{}) error {
-	lastMessage := response.Messages[len(response.Messages)-1]
-	if lastMessage.Kind() != ai.MessageKindText {
-		return fmt.Errorf("last message is not a text message")
-	}
-
-	err := json.Unmarshal([]byte(lastMessage.(*ai.TextMessage).Content), target)
-	if err != nil {
-		return fmt.Errorf("failed to parse structured response: %w", err)
-	}
-
-	return nil
 }
 
 func (t *StructuredTask) Then(task Task) Task {
