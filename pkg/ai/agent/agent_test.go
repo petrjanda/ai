@@ -51,6 +51,15 @@ func (s *AgentSuite) TestAgent() {
 		), nil).
 		Once()
 
+	// // Retry call for tool correction (when tool fails)
+	// llm.
+	// 	On("Invoke", mock.Anything, mock.Anything).
+	// 	Return(ai.NewLLMResponse(
+	// 		ai.NewToolCallMessage(tools.NewToolCall("2", "formatter", json.RawMessage(`{"name": "John"}`))),
+	// 	), nil).
+	// 	Once()
+
+	// Second attempt after correction
 	llm.
 		On("Invoke", mock.Anything, mock.Anything).
 		Return(ai.NewLLMResponse(ai.NewAssistantMessage("Done.")), nil).

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/getsynq/cloud/ai-data-sre/pkg/ai"
+	"github.com/pkg/errors"
 
 	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/tools"
 
@@ -27,8 +28,8 @@ type LLM struct {
 	inputSchema json.RawMessage
 	llm         ai.LLM // The underlying LLM to delegate to
 
-	retryManager *RetryManager
-	events       ai.AgentEvents
+	retryConfig *RetryConfig
+	events      ai.AgentEvents
 }
 
 // LLMOpts represents options for configuring an LLM with structured output
@@ -72,8 +73,8 @@ func NewLLM(inputSchema json.RawMessage, llm_ ai.LLM, opts ...LLMOpts) Structure
 	}
 
 	// Initialize retry manager with default config if not set
-	if f.retryManager == nil {
-		f.retryManager = NewRetryManager(f.llm, DefaultRetryConfig())
+	if f.retryConfig == nil {
+		f.retryConfig = DefaultRetryConfig()
 	}
 
 	return f
@@ -146,11 +147,12 @@ func (f *LLM) Invoke(ctx context.Context, request *ai.LLMRequest) (*ai.LLMRespon
 	// Log actual internal request
 	f.events.OnRequest(ctx, forcedRequest)
 
-	// Create a structured output operation for the retry component
-	operation := NewStructuredOutputOperation(forcedRequest, f.llm, f, f.events)
+	retrier := NewRetrier(
+		NewStructuredRetriable(f.llm, forcedRequest, f.events, f),
+	)
 
 	// Execute with retry
-	return ExecuteWithRetry(f.retryManager, ctx, operation)
+	return retrier.Execute(ctx, f.llm, request.History)
 }
 
 // MarshalJSON implements custom JSON marshaling for BaseLLMWithStructuredOutput
@@ -161,4 +163,63 @@ func (f *LLM) MarshalJSON() ([]byte, error) {
 		"description":  f.description,
 		"input_schema": f.inputSchema,
 	})
+}
+
+type StructuredRetriable struct {
+	llm       ai.LLM
+	request   *ai.LLMRequest
+	events    ai.AgentEvents
+	formatter StructuredLLM
+
+	previousError error
+}
+
+func NewStructuredRetriable(llm ai.LLM, request *ai.LLMRequest, events ai.AgentEvents, formatter StructuredLLM) *StructuredRetriable {
+	return &StructuredRetriable{
+		llm:           llm,
+		request:       request,
+		events:        events,
+		formatter:     formatter,
+		previousError: nil,
+	}
+}
+
+func (s *StructuredRetriable) Retry(ctx context.Context, attempt int) (*ai.LLMResponse, error) {
+	// Add the previous error to the request history
+	if s.previousError != nil {
+		s.request = s.request.Clone(ai.WithAddedHistory(ai.NewHistory(ai.NewUserMessage(s.previousError.Error()))))
+	}
+
+	// Delegate to the underlying LLM
+	response, err := s.llm.Invoke(ctx, s.request)
+	if err != nil {
+		return nil, errors.Wrap(err, "underlying LLM invocation failed")
+	}
+
+	// Verify the LLM followed forced tool usage
+	toolCalls := response.ToolCalls()
+	if len(toolCalls) == 0 {
+		return nil, errors.New("no tool call found in response - LLM did not follow forced tool usage")
+	}
+
+	// Verify the format of produced structured output
+	toolCall := toolCalls[0]
+	result, err := s.formatter.Execute(ctx, toolCall.Args)
+	if err != nil {
+		s.events.OnToolError(ctx, toolCall, attempt, err)
+		return nil, errors.Wrap(err, "invalid structured output")
+	}
+
+	// Verify it can be marshalled
+	if _, err := json.Marshal(result); err != nil {
+		s.events.OnToolError(ctx, toolCall, attempt, err)
+		return nil, errors.Wrap(err, "structured output marshalling failed")
+	}
+
+	return response, nil
+}
+
+func (s *StructuredRetriable) OnFailure(ctx context.Context, attempt int, err error) error {
+	s.previousError = err
+	return nil
 }
