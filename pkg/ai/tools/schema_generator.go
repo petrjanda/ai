@@ -7,6 +7,12 @@ import (
 	"github.com/invopop/jsonschema"
 )
 
+var DefaultSchemaGenerator SchemaGenerator = NewGenericSchemaGenerator()
+
+func SetDefaultSchemaGenerator(generator SchemaGenerator) {
+	DefaultSchemaGenerator = generator
+}
+
 type SchemaGenerator interface {
 	Generate(v interface{}) (json.RawMessage, error)
 	MustGenerate(v interface{}) json.RawMessage

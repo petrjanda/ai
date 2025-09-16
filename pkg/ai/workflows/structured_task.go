@@ -7,6 +7,7 @@ import (
 
 	"github.com/getsynq/cloud/ai-data-sre/pkg/ai"
 	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/structured"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/tools"
 )
 
 // StructuredTask is a task that returns a structured response.
@@ -17,8 +18,9 @@ type StructuredTask struct {
 	Name_ string
 
 	Request *ai.LLMRequest
-	schema  json.RawMessage
 	Opts    []structured.LLMOpts
+
+	schema json.RawMessage
 }
 
 type StructuredTaskOpts = func(*StructuredTask)
@@ -30,7 +32,9 @@ func StructuredTaskWithRequest(request *ai.LLMRequest) StructuredTaskOpts {
 }
 
 // NewStructuredTask creates a new structured task with a pre-generated schema
-func NewStructuredTask(name string, schema json.RawMessage, request *ai.LLMRequest, opts ...structured.LLMOpts) *StructuredTask {
+func NewStructuredTask[T any](name string, request *ai.LLMRequest, opts ...structured.LLMOpts) *StructuredTask {
+	schema := tools.DefaultSchemaGenerator.MustGenerate(new(T))
+
 	return &StructuredTask{
 		Name_:   name,
 		Request: request,

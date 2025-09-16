@@ -21,9 +21,8 @@ type Translation struct {
 
 var TranslationSchema = openai.NewOpenAISchemaGenerator().MustGenerate(&Translation{})
 
-var PiratesTask = workflows.NewStructuredTask(
+var PiratesTask = workflows.NewStructuredTask[Translation](
 	"arrrr",
-	openai.NewOpenAISchemaGenerator().MustGenerate(&Translation{}),
 	ai.NewLLMRequest(
 		ai.WithModel(ai.Claude3Sonnet),
 		ai.WithSystem(`
@@ -39,11 +38,10 @@ var PiratesTask = workflows.NewStructuredTask(
 	),
 )
 
-var ReversePiratesTask = workflows.NewStructuredTask(
+var ReversePiratesTask = workflows.NewStructuredTask[Translation](
 	"no-arrrr",
-	openai.NewOpenAISchemaGenerator().MustGenerate(&Translation{}),
 	ai.NewLLMRequest(
-		ai.WithModel(ai.Claude3Sonnet),
+		ai.WithModel(ai.Gemini25Pro),
 		ai.WithSystem(`
 			You are a pirate translator.
 

@@ -62,7 +62,6 @@ var searchFlightsTool = tools.NewSimpleTool(
 			},
 		}, nil
 	},
-	schemaGenerator,
 )
 
 // BOOK
@@ -118,16 +117,15 @@ var travelAgent = workflows.NewAgentTask(
 		ai.WithModel(ai.Gemini25Flash),
 		ai.WithTemperature(0.0),
 		ai.WithMaxCompletionTokens(1000),
-		ai.WithTools(tools.NewAdapter(NewBookFlightTool(), schemaGenerator), searchFlightsTool),
+		ai.WithTools(tools.NewAdapter(NewBookFlightTool()), searchFlightsTool),
 	),
 	agent.WithEvents(logger),
 )
 
 // FINAL FORMATTER
 
-var formatter = workflows.NewStructuredTask(
+var formatter = workflows.NewStructuredTask[Itinerary](
 	"formatter",
-	schemaGenerator.MustGenerate(new(Itinerary)),
 	ai.NewLLMRequest(
 		ai.WithSystem(`
 			Format flight information into specific format.

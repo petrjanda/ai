@@ -10,14 +10,11 @@ import (
 
 	"github.com/getsynq/cloud/ai-data-sre/examples"
 	"github.com/getsynq/cloud/ai-data-sre/pkg/ai"
-	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/adapters/openai"
 	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/agent"
 	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/structured"
 	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/tools"
 	"github.com/joho/godotenv"
 )
-
-var schemas = openai.NewOpenAISchemaGenerator()
 
 type Request struct {
 	Name string `json:"name"`
@@ -40,7 +37,6 @@ var tool = tools.NewSimpleTool("greet", "Greet someone",
 			Response: fmt.Sprintf("Hello, %s!", input.Name),
 		}, nil
 	},
-	schemas,
 )
 
 func main() {

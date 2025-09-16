@@ -21,14 +21,12 @@ type GoTool[I, O any] interface {
 // can be used as a tool in the agent.
 
 type Adapter[I, O any] struct {
-	tool      GoTool[I, O]
-	generator SchemaGenerator
+	tool GoTool[I, O]
 }
 
-func NewAdapter[I, O any](tool GoTool[I, O], generator SchemaGenerator) *Adapter[I, O] {
+func NewAdapter[I, O any](tool GoTool[I, O]) *Adapter[I, O] {
 	return &Adapter[I, O]{
-		tool:      tool,
-		generator: generator,
+		tool: tool,
 	}
 }
 
@@ -41,17 +39,11 @@ func (a *Adapter[I, O]) Description() string {
 }
 
 func (a *Adapter[I, O]) InputSchemaRaw() json.RawMessage {
-	return a.generator.MustGenerate(new(I))
+	return DefaultSchemaGenerator.MustGenerate(new(I))
 }
 
 func (a *Adapter[I, O]) OutputSchemaRaw() json.RawMessage {
-	schema, err := a.generator.Generate(new(O))
-
-	if err != nil {
-		return nil
-	}
-
-	return schema
+	return DefaultSchemaGenerator.MustGenerate(new(O))
 }
 
 func (a *Adapter[I, O]) Execute(ctx context.Context, args json.RawMessage) (json.RawMessage, error) {

@@ -27,26 +27,23 @@ type Flight struct {
 	Price            int    `json:"price" jsonschema:"required"`
 }
 
-var formatter = workflows.NewStructuredTask(
+var formatter = workflows.NewStructuredTask[Flight](
 	"formatter",
-	schemaGenerator.MustGenerate(new(Flight)),
 	ai.NewLLMRequest(
 		ai.WithModel(ai.Gemini25Flash),
 		ai.WithSystem(`
-				Generate flight from Asia to US.
+				Generate example flights.
 			`),
 		ai.WithTemperature(1.0),
 	),
 )
 
 func main() {
-	schemaGenerator.MustGenerate(new(Flight))
-
 	ctx := context.Background()
 	godotenv.Load()
 	litellm := examples.GetLiteLLM()
 
-	prompt := "Generate"
+	prompt := "Generate flight from Asia to US."
 	confirmations, err := workflows.NewTypedWrapper[Flight](formatter).
 		Invoke(ctx, litellm, ai.NewHistory(ai.NewUserMessage(prompt)))
 

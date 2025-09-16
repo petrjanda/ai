@@ -12,15 +12,13 @@ type SimpleTool[I, O any] struct {
 	name        string
 	description string
 	runner      func(ctx context.Context, input *I) (*O, error)
-	generator   SchemaGenerator
 }
 
 // NewSimpleTool creates a new generic tool with the given name, description, and runner function
-func NewSimpleTool[I, O any](name, description string, runner func(ctx context.Context, input *I) (*O, error), generator SchemaGenerator) *SimpleTool[I, O] {
+func NewSimpleTool[I, O any](name, description string, runner func(ctx context.Context, input *I) (*O, error)) *SimpleTool[I, O] {
 	return &SimpleTool[I, O]{
 		name:        name,
 		description: description,
-		generator:   generator,
 		runner:      runner,
 	}
 }
@@ -37,17 +35,12 @@ func (g *SimpleTool[I, O]) Description() string {
 
 // InputSchemaRaw returns the JSON schema for the tool's input type I
 func (g *SimpleTool[I, O]) InputSchemaRaw() json.RawMessage {
-	return g.generator.MustGenerate(new(I))
+	return DefaultSchemaGenerator.MustGenerate(new(I))
 }
 
 // OutputSchemaRaw returns the JSON schema for the tool's output type O
 func (g *SimpleTool[I, O]) OutputSchemaRaw() json.RawMessage {
-	schema, err := g.generator.Generate(new(O))
-	if err != nil {
-		return nil
-	}
-
-	return schema
+	return DefaultSchemaGenerator.MustGenerate(new(O))
 }
 
 // Run executes the tool with the given arguments, automatically handling JSON marshalling/unmarshalling

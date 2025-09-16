@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/getsynq/cloud/ai-data-sre/pkg/ai"
-	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/adapters/openai"
 	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/structured"
 	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/tools"
 	"github.com/stretchr/testify/mock"
@@ -39,7 +38,6 @@ var greetTool = tools.NewSimpleTool("greet", "Greet someone",
 	func(ctx context.Context, input *Req) (*Res, error) {
 		return &Res{Response: "Hello, " + input.Name + "!"}, nil
 	},
-	openai.NewOpenAISchemaGenerator(),
 )
 
 func (s *AgentSuite) TestAgent() {
@@ -79,7 +77,6 @@ var greetFailingTool = tools.NewSimpleTool("greet", "Greet someone",
 		}
 		return nil, errors.New("test error")
 	},
-	openai.NewOpenAISchemaGenerator(),
 )
 
 func (s *AgentSuite) TestAgentWithFailingTool() {
