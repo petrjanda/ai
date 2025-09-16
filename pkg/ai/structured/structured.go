@@ -163,6 +163,8 @@ func (f *LLM) MarshalJSON() ([]byte, error) {
 	})
 }
 
+// RETRIABLE
+
 type StructuredRetriable struct {
 	llm       ai.LLM
 	request   *ai.LLMRequest
