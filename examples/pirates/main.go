@@ -14,10 +14,10 @@ import (
 
 type Translation struct {
 	// Input message
-	In string `json:"input" jsonschema:"required" jsonschema_description:"The input message"`
+	Original string `json:"original" jsonschema:"required" jsonschema_description:"The input message"`
 
 	// Output message
-	Out string `json:"output" jsonschema:"required" jsonschema_description:"The output message"`
+	Translated string `json:"translated" jsonschema:"required" jsonschema_description:"The output message"`
 }
 
 var TranslationSchema = openai.NewOpenAISchemaGenerator().MustGenerate(&Translation{})
@@ -56,10 +56,11 @@ func main() {
 	}
 
 	for _, q := range queries {
-		// Translate to pirate
-		workflows.NewTypedWrapper[Translation](PiratesTask).
+		if _, err := workflows.NewTypedWrapper[Translation](PiratesTask).
 			Invoke(ctx, litellm, ai.NewHistory(
 				ai.NewUserMessage(q),
-			))
+			)); err != nil {
+			panic(err)
+		}
 	}
 }
