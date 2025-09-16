@@ -147,12 +147,10 @@ func (f *LLM) Invoke(ctx context.Context, request *ai.LLMRequest) (*ai.LLMRespon
 	// Log actual internal request
 	f.events.OnRequest(ctx, forcedRequest)
 
-	retrier := NewRetrier(
-		NewStructuredRetriable(f.llm, forcedRequest, f.events, f),
-	)
+	retrier := NewRetrier(f.retryConfig, NewStructuredRetriable(f.llm, forcedRequest, f.events, f))
 
 	// Execute with retry
-	return retrier.Execute(ctx, f.llm, request.History)
+	return retrier.Execute(ctx, f.llm)
 }
 
 // MarshalJSON implements custom JSON marshaling for BaseLLMWithStructuredOutput

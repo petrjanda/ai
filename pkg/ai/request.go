@@ -6,7 +6,7 @@ type LLMRequest struct {
 	Model     ModelId         `json:"model"`
 	System    string          `json:"system"`
 	History   History         `json:"history"`
-	Tools     []tools.Tool    `json:"tools"`
+	Tools     tools.Toolbox   `json:"tools"`
 	ToolUsage tools.ToolUsage `json:"tool_usage"`
 
 	MaxCompletionTokens int     `json:"max_completion_tokens"`

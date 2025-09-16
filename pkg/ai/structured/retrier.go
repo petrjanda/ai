@@ -18,11 +18,11 @@ type Retrier[T any] struct {
 	retriableOperation Retryable[T]
 }
 
-func NewRetrier[T any](retriableOperation Retryable[T]) *Retrier[T] {
-	return &Retrier[T]{retriableOperation: retriableOperation}
+func NewRetrier[T any](config *RetryConfig, retriableOperation Retryable[T]) *Retrier[T] {
+	return &Retrier[T]{config: config, retriableOperation: retriableOperation}
 }
 
-func (r *Retrier[T]) Execute(ctx context.Context, llm ai.LLM, history ai.History) (T, error) {
+func (r *Retrier[T]) Execute(ctx context.Context, llm ai.LLM) (T, error) {
 	var zero T
 	var lastErr error
 	delay := r.config.RetryDelay
