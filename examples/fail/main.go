@@ -45,12 +45,12 @@ func main() {
 	llm := examples.GetLiteLLM()
 
 	agent := agent.NewAgent(llm,
-		agent.WithRetryConfig(structured.NewRetryConfig(string(ai.Claude4Sonnet), 1, 100*time.Millisecond, 2.0)),
+		agent.WithRetryConfig(structured.NewRetryConfig(ai.Gemini25Flash, 1, 100*time.Millisecond, 2.0)),
 		agent.WithEvents(ai.NewLogAgentEvents(slog.Default())),
 	)
 
 	res, err := agent.Invoke(context.Background(), ai.NewLLMRequest(
-		ai.WithModel(ai.Claude4Sonnet),
+		ai.WithModel(ai.Gemini25Flash),
 		ai.WithHistory(ai.NewHistory(
 			ai.NewUserMessage("Call greeting without providing a name"),
 		)),

@@ -54,7 +54,7 @@ func (s *AgentSuite) TestAgent() {
 		Return(ai.NewLLMResponse(ai.NewAssistantMessage("Done.")), nil).
 		Once()
 
-	agent := NewAgent(llm, WithRetryConfig(structured.NewRetryConfig(string(ai.Claude4Sonnet), 1, 100*time.Millisecond, 2.0)))
+	agent := NewAgent(llm, WithRetryConfig(structured.NewRetryConfig(ai.Claude4Sonnet, 1, 100*time.Millisecond, 2.0)))
 	res, err := agent.Invoke(context.Background(), ai.NewLLMRequest(
 		ai.WithModel(ai.Claude4Sonnet),
 		ai.WithHistory(ai.NewHistory(
@@ -102,7 +102,7 @@ func (s *AgentSuite) TestAgentWithFailingTool() {
 		Return(ai.NewLLMResponse(ai.NewAssistantMessage("Done.")), nil).
 		Once()
 
-	agent := NewAgent(llm, WithRetryConfig(structured.NewRetryConfig(string(ai.Claude4Sonnet), 2, 100*time.Millisecond, 2.0)))
+	agent := NewAgent(llm, WithRetryConfig(structured.NewRetryConfig(ai.Claude4Sonnet, 2, 100*time.Millisecond, 2.0)))
 	res, err := agent.Invoke(context.Background(), ai.NewLLMRequest(
 		ai.WithModel(ai.Claude4Sonnet),
 		ai.WithHistory(ai.NewHistory(

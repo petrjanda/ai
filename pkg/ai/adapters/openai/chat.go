@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 
 	"github.com/getsynq/cloud/ai-data-sre/pkg/ai"
 	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/tools"
@@ -87,7 +88,13 @@ func (a *OpenAIAdapter) Invoke(ctx context.Context, request *ai.LLMRequest) (*ai
 		}
 	}
 
+	payload, _ := json.MarshalIndent(chatReq, "", "  ")
+	slog.Debug("request", "request", string(payload))
 	resp, err := a.client.Chat.Completions.New(ctx, chatReq, option.WithBaseURL(a.endpoint))
+
+	payload, _ = json.MarshalIndent(resp, "", "  ")
+	slog.Debug("response", "response", string(payload))
+
 	if err != nil {
 		return nil, fmt.Errorf("OpenAI API call failed: %w", err)
 	}

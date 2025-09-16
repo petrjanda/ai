@@ -140,6 +140,11 @@ func (f *LLM) Invoke(ctx context.Context, request *ai.LLMRequest) (*ai.LLMRespon
 
 	// Create a new request that forces the use of the structured output formatter
 	forcedRequest := request.Clone(
+		// ai.WithSystem(`
+		// 	You will be given a 'formatter' tool with input schema,
+		// 	and a previous attempt of LLM to generate structured output that matches that schema.
+		// 	Your job is to call the formatter tool with corrected arguments that match the schema.
+		// `),
 		ai.WithTools(f), // Only include the structured output formatter as a tool
 		ai.WithToolUsage(tools.ForceTool(f.Name())), // Force the use of the formatter
 	)
@@ -216,7 +221,10 @@ func (s *StructuredRetriable) Retry(ctx context.Context, attempt int) (*ai.LLMRe
 		return nil, errors.Wrap(err, "structured output marshalling failed")
 	}
 
-	return ai.NewLLMResponse(ai.NewAssistantMessage(string(result))), nil
+	payload := ai.NewLLMResponse(ai.NewAssistantMessage(string(result)))
+	s.events.OnResponse(ctx, s.request, payload)
+
+	return payload, nil
 }
 
 func (s *StructuredRetriable) OnFailure(ctx context.Context, attempt int, err error) error {

@@ -13,7 +13,7 @@ type RetryConfig struct {
 	MaxRetries   int
 	RetryDelay   time.Duration
 	RetryBackoff float64
-	Model        string
+	ModelId      ai.ModelId
 }
 
 // DefaultRetryConfig returns sensible defaults for retry configuration
@@ -22,13 +22,13 @@ func DefaultRetryConfig() *RetryConfig {
 		MaxRetries:   0,
 		RetryDelay:   100 * time.Millisecond,
 		RetryBackoff: 2.0,
-		Model:        string(ai.Claude4Sonnet),
+		ModelId:      ai.Claude4Sonnet,
 	}
 }
 
-func NewRetryConfig(modelId string, maxRetries int, retryDelay time.Duration, retryBackoff float64) *RetryConfig {
+func NewRetryConfig(modelId ai.ModelId, maxRetries int, retryDelay time.Duration, retryBackoff float64) *RetryConfig {
 	return &RetryConfig{
-		Model:        modelId,
+		ModelId:      modelId,
 		MaxRetries:   maxRetries,
 		RetryDelay:   retryDelay,
 		RetryBackoff: retryBackoff,

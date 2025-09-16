@@ -31,13 +31,13 @@ func (c *Corrector) Execute(ctx context.Context, llm ai.LLM, history ai.History)
 
 	structuredLLM := NewLLM(c.schema, llm)
 	retryResponse, retryErr := structuredLLM.Invoke(ctx, retryRequest)
+
 	if retryErr != nil {
 		return nil, fmt.Errorf("failed to get corrected parameters: %w", retryErr)
 	}
 
-	if len(retryResponse.ToolCalls()) > 0 {
-		toolCall := retryResponse.ToolCalls()[0]
-		return toolCall.Args, nil
+	if retryResponse.LastMessageAsText() != nil {
+		return json.RawMessage(retryResponse.LastMessageAsText().Content), nil
 	}
 
 	return nil, fmt.Errorf("structured LLM did not provide corrected parameters")
