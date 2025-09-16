@@ -5,10 +5,10 @@ import (
 
 	_ "embed"
 
-	"github.com/getsynq/ai/pkg/ai"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai"
 
-	"github.com/getsynq/ai/pkg/ai/structured"
-	"github.com/getsynq/ai/pkg/ai/tools"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/structured"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/tools"
 )
 
 // Agent represents an agent that can use tools and interact with an LLM

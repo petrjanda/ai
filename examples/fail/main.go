@@ -9,11 +9,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/getsynq/ai/pkg/ai"
-	"github.com/getsynq/ai/pkg/ai/adapters/openai"
-	"github.com/getsynq/ai/pkg/ai/agent"
-	"github.com/getsynq/ai/pkg/ai/structured"
-	"github.com/getsynq/ai/pkg/ai/tools"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/adapters/openai"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/agent"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/structured"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/tools"
 	"github.com/joho/godotenv"
 )
 

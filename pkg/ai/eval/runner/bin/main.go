@@ -5,7 +5,7 @@ import (
 
 	_ "embed"
 
-	"github.com/getsynq/ai/pkg/ai/eval/runner"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/eval/runner"
 	"github.com/spf13/cobra"
 )
 

@@ -8,7 +8,7 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/getsynq/ai/pkg/ai/tools"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/tools"
 )
 
 type LLMEvents interface {

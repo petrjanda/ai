@@ -33,7 +33,7 @@ func NewOpenAISchemaGenerator() *OpenAISchemaGenerator {
 		AllowAdditionalProperties: true,
 	}
 
-	if err := reflector.AddGoComments("github.com/getsynq/ai/pkg", "./"); err != nil {
+	if err := reflector.AddGoComments("github.com/getsynq/cloud/ai-data-sre/pkg", "./"); err != nil {
 		// deal with error
 		panic(err)
 	}

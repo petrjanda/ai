@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/getsynq/ai/pkg/ai"
-	"github.com/getsynq/ai/pkg/ai/prompts"
-	"github.com/getsynq/ai/pkg/ai/tools"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/prompts"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/tools"
 )
 
 type ToolTask struct {

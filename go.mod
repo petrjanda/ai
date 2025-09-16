@@ -1,4 +1,4 @@
-module github.com/getsynq/ai
+module github.com/getsynq/cloud/ai-data-sre
 
 go 1.24.2
 

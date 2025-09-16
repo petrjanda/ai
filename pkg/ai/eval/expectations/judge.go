@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/getsynq/ai/pkg/ai"
-	"github.com/getsynq/ai/pkg/ai/adapters/openai"
-	"github.com/getsynq/ai/pkg/ai/structured"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/adapters/openai"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/structured"
 )
 
 type JudgeExpectation struct {

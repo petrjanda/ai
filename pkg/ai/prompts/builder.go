@@ -7,7 +7,7 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
-	"github.com/getsynq/ai/pkg/ai"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai"
 	"google.golang.org/protobuf/encoding/protojson"
 	"gopkg.in/yaml.v3"
 )

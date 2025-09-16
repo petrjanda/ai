@@ -6,10 +6,10 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/getsynq/ai/pkg/ai"
-	"github.com/getsynq/ai/pkg/ai/eval"
-	"github.com/getsynq/ai/pkg/ai/eval/expectations"
-	"github.com/getsynq/ai/pkg/ai/workflows"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/eval"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/eval/expectations"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/workflows"
 )
 
 // TableSuiteEvents creates a table showing test results across variants.

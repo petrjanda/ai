@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/getsynq/ai/pkg/ai/tools"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/tools"
 )
 
 // mockTool is a simple mock implementation for testing

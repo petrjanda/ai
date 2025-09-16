@@ -1,6 +1,6 @@
 package ai
 
-import "github.com/getsynq/ai/pkg/ai/tools"
+import "github.com/getsynq/cloud/ai-data-sre/pkg/ai/tools"
 
 type LLMResponse struct {
 	Messages History   `json:"messages"`

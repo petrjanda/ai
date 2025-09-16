@@ -3,8 +3,8 @@ package workflows
 import (
 	"context"
 
-	"github.com/getsynq/ai/pkg/ai"
-	"github.com/getsynq/ai/pkg/ai/agent"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/agent"
 )
 
 // AgentTask is a task that uses an agent to invoke the LLM.

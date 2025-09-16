@@ -4,10 +4,10 @@ package events
 // 	"errors"
 // 	"testing"
 
-// 	"github.com/getsynq/ai/pkg/ai"
-// 	"github.com/getsynq/ai/pkg/ai/eval"
-// 	"github.com/getsynq/ai/pkg/ai/eval/expectations"
-// 	"github.com/getsynq/ai/pkg/ai/workflows"
+// 	"github.com/getsynq/cloud/ai-data-sre/pkg/ai"
+// 	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/eval"
+// 	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/eval/expectations"
+// 	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/workflows"
 // )
 
 // func TestTableSuiteEvents(t *testing.T) {

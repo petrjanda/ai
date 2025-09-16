@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/getsynq/ai/pkg/ai"
-	"github.com/getsynq/ai/pkg/ai/tools"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/tools"
 )
 
 // ToolCallOperation implements RetryableOperation for tool calls
@@ -38,7 +38,6 @@ func (op *ToolCallOperation) Execute(ctx context.Context, attempt int) (ai.Messa
 	return ai.NewToolResultMessage(op.toolCall, result), nil
 }
 
-// GeoprrectionPrompt returns a prompt for correcting the tool call
 func (op *ToolCallOperation) GetCorrectionPrompt(ctx context.Context, lastError error) string {
 	// Use the same prompt format as the agent
 	correctionPromptFormat := `Tool call to '%s' failed with error: %s

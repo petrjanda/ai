@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/getsynq/ai/pkg/ai"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai"
 )
 
 // RetryConfig holds configuration for retry behavior

@@ -8,7 +8,7 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/getsynq/ai/pkg/ai"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai"
 	"github.com/pkg/errors"
 )
 
@@ -57,7 +57,7 @@ func ExecuteWithRetry[T any](rm *RetryManager, ctx context.Context, operation Re
 
 		// Handle operation failure and get corrected parameters
 
-		if err := handleOperationFailure(rm, ctx, operation, attempt, err); err != nil {
+		if err := onFailure(rm, ctx, operation, attempt, err); err != nil {
 			return zero, err
 		}
 	}
@@ -65,9 +65,11 @@ func ExecuteWithRetry[T any](rm *RetryManager, ctx context.Context, operation Re
 	return zero, fmt.Errorf("operation failed after %d retries: %w", rm.config.MaxRetries, lastErr)
 }
 
-func handleOperationFailure[T any](rm *RetryManager, ctx context.Context, operation RetryableOperation[T], attempt int, err error) error {
+func onFailure[T any](rm *RetryManager, ctx context.Context, operation RetryableOperation[T], attempt int, err error) error {
+	prompt := operation.GetCorrectionPrompt(ctx, err)
+
 	// Get corrected parameters from the LLM
-	correctedArgs, err := getCorrectedParameters(rm, ctx, operation.GetCorrectionPrompt(ctx, err), operation.GetSchema())
+	correctedArgs, err := getCorrectedParameters(rm, ctx, prompt, operation.GetSchema())
 	if err != nil {
 		return errors.Wrap(err, "failed to get corrected parameters")
 	}

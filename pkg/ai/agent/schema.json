@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://github.com/getsynq/cloud/ai-data-sre/pkg/ai/agent/req","properties":{"name":{"type":"string"}},"type":"object"}

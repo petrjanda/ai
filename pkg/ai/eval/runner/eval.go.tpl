@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"time"
-	"github.com/getsynq/ai/pkg/ai/eval"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/eval"
 {{- range $pkg, $funcs := . }}
 	{{(index $funcs 0).Alias}} "{{$pkg}}"
 {{- end }}

@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/getsynq/ai/pkg/ai"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai"
 
-	"github.com/getsynq/ai/pkg/ai/tools"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/tools"
 
 	"github.com/xeipuuv/gojsonschema"
 )

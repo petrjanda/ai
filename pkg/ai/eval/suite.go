@@ -3,9 +3,9 @@ package eval
 import (
 	"context"
 
-	"github.com/getsynq/ai/pkg/ai"
-	"github.com/getsynq/ai/pkg/ai/eval/expectations"
-	"github.com/getsynq/ai/pkg/ai/workflows"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/eval/expectations"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/workflows"
 
 	_ "embed"
 )

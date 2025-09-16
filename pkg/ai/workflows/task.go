@@ -3,7 +3,7 @@ package workflows
 import (
 	"context"
 
-	"github.com/getsynq/ai/pkg/ai"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai"
 )
 
 type Task interface {

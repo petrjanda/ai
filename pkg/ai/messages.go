@@ -3,7 +3,7 @@ package ai
 import (
 	"encoding/json"
 
-	"github.com/getsynq/ai/pkg/ai/tools"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/tools"
 )
 
 // Message represents a message in the conversation
