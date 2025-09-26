@@ -100,6 +100,7 @@ func (a *OpenAIAdapter) Invoke(ctx context.Context, request *ai.LLMRequest) (*ai
 	}
 
 	response := ai.NewLLMResponse()
+
 	usage := ai.NewLLMUsage(
 		resp.Usage.PromptTokens,
 		resp.Usage.CompletionTokens,

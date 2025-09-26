@@ -35,14 +35,11 @@ func main() {
 
 	llm := examples.GetLiteLLM()
 
-	flow := workflows.NewTypedWrapper[Recipe](workflows.NewStructuredTask[Recipe](
-		"recipe",
-		ai.NewLLMRequest(
-			ai.WithModel(ai.Gemini25Flash),
-			ai.WithSystem(`
+	flow := workflows.NewTypedTask[Recipe]("recipe", ai.NewLLMRequest(
+		ai.WithModel(ai.Gemini25Flash),
+		ai.WithSystem(`
 				Generate a recipe based on the user's input which includes a given ingredient and dietary restrictions.
 			`),
-		),
 	))
 
 	response, err := flow.Invoke(ctx, llm, ai.NewHistory(

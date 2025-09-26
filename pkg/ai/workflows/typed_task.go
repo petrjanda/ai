@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/getsynq/cloud/ai-data-sre/pkg/ai"
+	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/structured"
 )
 
 // TypedWrapper expands on StructuredTask by providing a typed result.
@@ -18,11 +19,11 @@ type TypedWrapper[T any] struct {
 	Inner *StructuredTask
 }
 
-func NewTypedTask[T any](name string, request *ai.LLMRequest) (*TypedWrapper[T], error) {
-	task := NewStructuredTask[T](name, request)
+func NewTypedTask[T any](name string, request *ai.LLMRequest, opts ...structured.LLMOpts) *TypedWrapper[T] {
+	task := NewStructuredTask[T](name, request, opts...)
 	return &TypedWrapper[T]{
 		Inner: task,
-	}, nil
+	}
 }
 
 func NewTypedWrapper[T any](task *StructuredTask) *TypedWrapper[T] {
