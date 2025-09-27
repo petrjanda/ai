@@ -56,8 +56,9 @@ func (r *LLMResponse) LastMessageAsText() *TextMessage {
 	return text
 }
 
-func (r *LLMResponse) SetUsage(usage *LLMUsage) {
+func (r *LLMResponse) SetUsage(usage *LLMUsage) *LLMResponse {
 	r.Usage = usage
+	return r
 }
 
 func (r *LLMResponse) AddUsage(usage *LLMUsage) {

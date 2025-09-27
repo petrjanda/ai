@@ -27,7 +27,7 @@ type AgentEvents interface {
 
 type NoopAgentEvents struct{}
 
-func NewNoopAgentEvents() AgentEvents {
+func NewNoopAgentEvents() *NoopAgentEvents {
 	return &NoopAgentEvents{}
 }
 

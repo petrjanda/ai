@@ -10,7 +10,7 @@ import (
 )
 
 type ToolTask struct {
-	Name_  string
+	id     string
 	Tool   tools.Tool
 	Args   json.RawMessage
 	Format HistoryFunc
@@ -28,7 +28,7 @@ func ToolTaskWithFormat(format HistoryFunc) ToolTaskOpts {
 
 func NewToolTask(name string, tool tools.Tool, args json.RawMessage, opts ...ToolTaskOpts) Task {
 	task := &ToolTask{
-		Name_:  name,
+		id:     name,
 		Tool:   tool,
 		Args:   args,
 		Format: toolTaskToHistory,
@@ -38,12 +38,12 @@ func NewToolTask(name string, tool tools.Tool, args json.RawMessage, opts ...Too
 		opt(task)
 	}
 
-	return NewLazyTask(task.Name_, func(ctx context.Context, _ ai.LLM, _ ai.History) (*ai.LLMResponse, error) {
+	return NewLazyTask(task.id, func(ctx context.Context, _ ai.LLM, _ ai.History) (*ai.LLMResponse, error) {
 		result, err := task.Tool.Execute(ctx, task.Args)
 		if err != nil {
 			return nil, err
 		}
-		return ai.NewLLMResponse(toolTaskToHistory(result, task.Name_)...), nil
+		return ai.NewLLMResponse(toolTaskToHistory(result, task.id)...), nil
 	})
 }
 

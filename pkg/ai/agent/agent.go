@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 
 	_ "embed"
 
@@ -65,13 +66,15 @@ func NewAgent(llm_ ai.LLM, opts ...AgentOpts) ai.LLM {
 func (a *Agent) Invoke(ctx context.Context, request *ai.LLMRequest) (*ai.LLMResponse, error) {
 	a.events.OnRequest(ctx, request)
 
+	slog.Info("executing", "len(history)", len(request.History))
+
 	response, err := a.llm.Invoke(ctx, request)
 	if err != nil {
 		a.events.OnRequestError(ctx, request, err)
 		return nil, err
 	}
 
-	a.events.OnResponse(ctx, request, response)
+	// a.events.OnResponse(ctx, request, response)
 	a.totalUsage.Add(response.Usage)
 
 	if len(response.ToolCalls()) > 0 {
@@ -96,18 +99,19 @@ func (a *Agent) Invoke(ctx context.Context, request *ai.LLMRequest) (*ai.LLMResp
 			}
 		}
 
-		request = request.Clone(
-			ai.WithHistory(request.History.Append(response.Messages...)),
-		)
-
 		// Return usage 'to-date' rather than just the last response's usage
 		response.SetUsage(a.totalUsage)
+		a.events.OnResponse(ctx, request, response)
 
-		return a.Invoke(ctx, request)
+		req := request.Clone(
+			ai.WithHistory(request.History.Append(response.Messages...)),
+		)
+		return a.Invoke(ctx, req)
 	}
 
 	// Return usage 'to-date' rather than just the last response's usage
 	response.SetUsage(a.totalUsage)
+	a.events.OnResponse(ctx, request, response)
 
 	return response, nil
 }

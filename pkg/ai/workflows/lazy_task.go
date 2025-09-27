@@ -11,7 +11,7 @@ import (
 // This is useful for cases where you want to delay expensive operations like
 // data preloading until the task is actually executed.
 type LazyTask struct {
-	Name_    string
+	id       string
 	callback LazyTaskCallback
 }
 
@@ -23,23 +23,27 @@ type LazyTaskCallback func(ctx context.Context, llm ai.LLM, history ai.History) 
 // when the task is invoked.
 func NewLazyTask(name string, callback LazyTaskCallback) *LazyTask {
 	return &LazyTask{
-		Name_:    name,
+		id:       name,
 		callback: callback,
 	}
 }
 
 func (t *LazyTask) Name() string {
-	return t.Name_
+	return t.id
 }
 
 func (t *LazyTask) Clone() Task {
 	return &LazyTask{
-		Name_:    t.Name_,
+		id:       t.id,
 		callback: t.callback,
 	}
 }
 
 func (t *LazyTask) Invoke(ctx context.Context, llm ai.LLM, history ai.History) (*ai.LLMResponse, error) {
+	if response, ok := loadTask(ctx, t.id); ok {
+		return response, nil
+	}
+
 	// Simply execute the callback
 	response, err := t.callback(ctx, llm, history)
 	if err != nil {
@@ -48,12 +52,12 @@ func (t *LazyTask) Invoke(ctx context.Context, llm ai.LLM, history ai.History) (
 
 	response.Messages = history.Append(response.Messages...)
 
-	return response, nil
+	return saveTask(ctx, t.id, response)
 }
 
 func (t *LazyTask) WithName(name string) Task {
 	new := t.Clone().(*LazyTask)
-	new.Name_ = name
+	new.id = name
 	return new
 }
 

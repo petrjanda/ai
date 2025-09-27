@@ -41,7 +41,7 @@ func TestLazyTask_BasicFunctionality(t *testing.T) {
 
 	// Test cloning
 	cloned := lazyTask.Clone().(*LazyTask)
-	assert.Equal(t, lazyTask.Name_, cloned.Name_)
+	assert.Equal(t, lazyTask.id, cloned.id)
 	assert.NotNil(t, cloned.callback)
 
 	// Test invocation
@@ -91,7 +91,7 @@ func TestLazyTask_WithRequestOpts(t *testing.T) {
 	)
 
 	// Verify it's still the same task (just cloned)
-	assert.Equal(t, lazyTask.Name_, lazyTaskWithOpts.(*LazyTask).Name_)
+	assert.Equal(t, lazyTask.id, lazyTaskWithOpts.(*LazyTask).id)
 	// Note: We can't compare function pointers directly, but we can verify the task is cloned
 	assert.NotNil(t, lazyTaskWithOpts.(*LazyTask).callback)
 }

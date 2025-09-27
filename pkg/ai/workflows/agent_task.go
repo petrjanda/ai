@@ -35,10 +35,28 @@ func (t *AgentTask) Clone() Task {
 }
 
 func (t *AgentTask) Invoke(ctx context.Context, llm ai.LLM, history ai.History) (*ai.LLMResponse, error) {
-	agent := agent.NewAgent(llm, t.AgentOpts...)
+	// Add hook to save the agent progress
+	hook := NewAgentStorageHook(t.Name_)
+	t.AgentOpts = append(t.AgentOpts, agent.WithEvents(hook))
+
 	request := t.Request.Clone(ai.WithAddedHistory(history))
 
-	return agent.Invoke(ctx, request)
+	if response, ok := loadAgentTask(ctx, t.Name_); ok {
+		if response.Terminal {
+			return response.Response, nil
+		} else {
+			// Initiate agent with the stored history
+			request = t.Request.Clone(ai.WithHistory(response.Response.Messages))
+		}
+	}
+
+	agent := agent.NewAgent(llm, t.AgentOpts...)
+	response, err := agent.Invoke(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
 }
 
 func (t *AgentTask) WithRequestOpts(opts ...ai.LLMRequestOpts) Task {

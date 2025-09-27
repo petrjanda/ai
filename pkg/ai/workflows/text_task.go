@@ -29,7 +29,16 @@ func (t *TextTask) Clone() Task {
 }
 
 func (t *TextTask) Invoke(ctx context.Context, llm ai.LLM, history ai.History) (*ai.LLMResponse, error) {
-	return llm.Invoke(ctx, t.Request.Clone(ai.WithHistory(history)))
+	if response, ok := loadTask(ctx, t.Name_); ok {
+		return response, nil
+	}
+
+	response, err := llm.Invoke(ctx, t.Request.Clone(ai.WithHistory(history)))
+	if err != nil {
+		return nil, err
+	}
+
+	return saveTask(ctx, t.Name_, response)
 }
 
 func (t *TextTask) WithRequestOpts(opts ...ai.LLMRequestOpts) Task {
