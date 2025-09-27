@@ -2,6 +2,7 @@ package workflows
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/getsynq/cloud/ai-data-sre/pkg/ai"
 	"github.com/getsynq/cloud/ai-data-sre/pkg/ai/agent"
@@ -43,9 +44,12 @@ func (t *AgentTask) Invoke(ctx context.Context, llm ai.LLM, history ai.History) 
 
 	if response, ok := loadAgentTask(ctx, t.Name_); ok {
 		if response.Terminal {
+			slog.Info("skipping", "history", len(response.Response.Messages))
 			return response.Response, nil
 		} else {
 			// Initiate agent with the stored history
+
+			slog.Info("continuing", "history", len(response.Response.Messages))
 			request = t.Request.Clone(ai.WithHistory(response.Response.Messages))
 		}
 	}

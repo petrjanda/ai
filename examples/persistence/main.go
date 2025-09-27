@@ -167,13 +167,13 @@ func main() {
 
 	{
 
-		ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
+		ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 		defer cancel()
 		confirmations, err := bookFlights.
 			Invoke(ctx, litellm, &prompt)
 
 		if err != nil {
-			panic(err)
+			slog.Error("error", "error", err)
 		}
 
 		payload, err := json.MarshalIndent(confirmations, "", "  ")
@@ -185,8 +185,6 @@ func main() {
 	}
 
 	slog.Info("First run")
-
-	ctx = workflows.WithStorage(ctx, memory.Storage("travel-2"))
 
 	{
 		confirmations, err := bookFlights.

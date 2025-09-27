@@ -63,6 +63,11 @@ func NewAgent(llm_ ai.LLM, opts ...AgentOpts) ai.LLM {
 
 // Loop processes the conversation loop, handling tool calls and LLM responses
 func (a *Agent) Invoke(ctx context.Context, request *ai.LLMRequest) (*ai.LLMResponse, error) {
+	// Check if context is already cancelled
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
 	a.events.OnRequest(ctx, request)
 
 	response, err := a.llm.Invoke(ctx, request)
@@ -76,6 +81,11 @@ func (a *Agent) Invoke(ctx context.Context, request *ai.LLMRequest) (*ai.LLMResp
 
 	if len(response.ToolCalls()) > 0 {
 		for _, toolCall := range response.ToolCalls() {
+			// Check for context cancellation before processing each tool call
+			if err := ctx.Err(); err != nil {
+				return nil, err
+			}
+
 			a.events.OnToolCall(ctx, toolCall)
 
 			// Find the tool to get its input schema
@@ -103,6 +113,11 @@ func (a *Agent) Invoke(ctx context.Context, request *ai.LLMRequest) (*ai.LLMResp
 		req := request.Clone(
 			ai.WithHistory(request.History.Append(response.Messages...)),
 		)
+
+		// Check for context cancellation before recursive call
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
 
 		return a.Invoke(ctx, req)
 	}
