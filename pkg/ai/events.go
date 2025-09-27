@@ -128,3 +128,51 @@ func printMessage(message Message, textOnly bool) string {
 		return fmt.Sprintf("unknown message type: %T", t)
 	}
 }
+
+type MultiplexEvents struct {
+	events []AgentEvents
+}
+
+func NewMultiplexEvents(events ...AgentEvents) *MultiplexEvents {
+	return &MultiplexEvents{events: events}
+}
+
+func (e *MultiplexEvents) Add(events ...AgentEvents) {
+	e.events = append(e.events, events...)
+}
+
+func (e *MultiplexEvents) OnRequest(ctx context.Context, request *LLMRequest) {
+	for _, event := range e.events {
+		event.OnRequest(ctx, request)
+	}
+}
+
+func (e *MultiplexEvents) OnResponse(ctx context.Context, request *LLMRequest, response *LLMResponse) {
+	for _, event := range e.events {
+		event.OnResponse(ctx, request, response)
+	}
+}
+
+func (e *MultiplexEvents) OnRequestError(ctx context.Context, request *LLMRequest, err error) {
+	for _, event := range e.events {
+		event.OnRequestError(ctx, request, err)
+	}
+}
+
+func (e *MultiplexEvents) OnToolCall(ctx context.Context, toolCall *tools.ToolCall) {
+	for _, event := range e.events {
+		event.OnToolCall(ctx, toolCall)
+	}
+}
+
+func (e *MultiplexEvents) OnToolError(ctx context.Context, toolCall *tools.ToolCall, attempt int, err error) {
+	for _, event := range e.events {
+		event.OnToolError(ctx, toolCall, attempt, err)
+	}
+}
+
+func (e *MultiplexEvents) OnToolResult(ctx context.Context, toolCall *tools.ToolCall, result json.RawMessage) {
+	for _, event := range e.events {
+		event.OnToolResult(ctx, toolCall, result)
+	}
+}

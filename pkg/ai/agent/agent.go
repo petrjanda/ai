@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log/slog"
 
 	_ "embed"
 
@@ -20,7 +19,7 @@ type Agent struct {
 
 	retryConfig *structured.RetryConfig
 
-	events ai.AgentEvents
+	events *ai.MultiplexEvents
 
 	totalUsage *ai.LLMUsage
 }
@@ -37,7 +36,7 @@ func WithRetryConfig(config *structured.RetryConfig) AgentOpts {
 
 func WithEvents(events ai.AgentEvents) AgentOpts {
 	return func(a *Agent) {
-		a.events = events
+		a.events.Add(events)
 	}
 }
 
@@ -45,7 +44,7 @@ func WithEvents(events ai.AgentEvents) AgentOpts {
 func NewAgent(llm_ ai.LLM, opts ...AgentOpts) ai.LLM {
 	a := &Agent{
 		llm:        llm_,
-		events:     ai.NewNoopAgentEvents(),
+		events:     ai.NewMultiplexEvents(),
 		totalUsage: ai.NewLLMUsage(0, 0, 0),
 	}
 
@@ -65,8 +64,6 @@ func NewAgent(llm_ ai.LLM, opts ...AgentOpts) ai.LLM {
 // Loop processes the conversation loop, handling tool calls and LLM responses
 func (a *Agent) Invoke(ctx context.Context, request *ai.LLMRequest) (*ai.LLMResponse, error) {
 	a.events.OnRequest(ctx, request)
-
-	slog.Info("executing", "len(history)", len(request.History))
 
 	response, err := a.llm.Invoke(ctx, request)
 	if err != nil {
