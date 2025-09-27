@@ -146,7 +146,7 @@ func bookFlights(ctx context.Context, litellm ai.LLM, prompt string) (*Itinerary
 		return nil, err
 	}
 
-	return workflows.NewTypedWrapper[Itinerary](formatter).
+	return workflows.Typed[Itinerary](formatter).
 		Invoke(ctx, litellm, response.Messages)
 }
 

@@ -56,7 +56,7 @@ func main() {
 	}
 
 	for _, q := range queries {
-		if _, err := workflows.NewTypedWrapper[Translation](PiratesTask).
+		if _, err := workflows.Typed[Translation](PiratesTask).
 			Invoke(ctx, litellm, ai.NewHistory(
 				ai.NewUserMessage(q),
 			)); err != nil {

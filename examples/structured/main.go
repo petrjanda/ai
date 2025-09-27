@@ -44,7 +44,7 @@ func main() {
 	litellm := examples.GetLiteLLM()
 
 	prompt := "Generate flight from Asia to US."
-	confirmations, err := workflows.NewTypedWrapper[Flight](formatter).
+	confirmations, err := workflows.Typed[Flight](formatter).
 		Invoke(ctx, litellm, ai.NewHistory(ai.NewUserMessage(prompt)))
 
 	if err != nil {

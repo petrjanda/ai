@@ -152,3 +152,30 @@ func (h *AgentStorageHook) OnResponse(ctx context.Context, request *ai.LLMReques
 
 	saveAgentTask(ctx, h.id, saved, len(response.ToolCalls()) == 0)
 }
+
+func loadWork[T any](ctx context.Context, id string) (*T, bool) {
+	storage, ok := StorageFrom(ctx)
+	if !ok {
+		return nil, false
+	}
+
+	response, err := storage.Load(ctx, id)
+	if err != nil {
+		return nil, false
+	}
+
+	if response == nil {
+		return nil, false
+	}
+
+	return response.(*T), true
+}
+
+func saveWork[T any](ctx context.Context, id string, response *T) (*T, error) {
+	storage, ok := StorageFrom(ctx)
+	if !ok {
+		return response, nil
+	}
+
+	return response, storage.Store(ctx, id, response)
+}

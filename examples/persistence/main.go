@@ -138,26 +138,21 @@ var formatter = workflows.NewStructuredTask[Itinerary](
 	structured.WithAgentEvents(logger),
 )
 
-func bookFlights(ctx context.Context, litellm ai.LLM, prompt string) (*Itinerary, error) {
-
-	response, err := travelAgent.
-		Invoke(ctx, litellm, ai.NewHistory(
-			ai.NewUserMessage(prompt),
-		))
-
-	if err != nil {
-		return nil, err
-	}
-
-	itinerary, err := workflows.NewTypedWrapper[Itinerary](formatter).
-		Invoke(ctx, litellm, response.Messages)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return itinerary, nil
+type WorkflowInput struct {
+	Prompt string
 }
+
+var bookFlights = workflows.NewFunctionWork("book-flights",
+	func(ctx context.Context, llm ai.LLM, in *string) (*Itinerary, error) {
+		return workflows.Typed[Itinerary](
+			travelAgent.
+				Pipe(formatter),
+		).
+			InvokeTyped(ctx, llm, ai.NewHistory(
+				ai.NewUserMessage(*in),
+			))
+	},
+)
 
 func main() {
 	ctx := context.Background()
@@ -168,18 +163,29 @@ func main() {
 	ctx = workflows.WithStorage(ctx, memory.Storage("travel-1"))
 
 	prompt := "I want to book a flight to Tokyo, 1st Oct and back 8th Oct"
-	confirmations, err := bookFlights(ctx, litellm, prompt)
-	if err != nil {
-		panic(err)
-	}
-
-	payload, err := json.MarshalIndent(confirmations, "", "  ")
-	if err != nil {
-		panic(err)
-	}
 
 	{
-		confirmations, err := bookFlights(ctx, litellm, prompt)
+		confirmations, err := bookFlights.
+			Invoke(ctx, litellm, &prompt)
+
+		if err != nil {
+			panic(err)
+		}
+
+		payload, err := json.MarshalIndent(confirmations, "", "  ")
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println(string(payload))
+	}
+
+	slog.Info("First run")
+
+	{
+		confirmations, err := bookFlights.
+			Invoke(ctx, litellm, &prompt)
+
 		if err != nil {
 			panic(err)
 		}
@@ -191,6 +197,8 @@ func main() {
 
 		log.Println(string(payload))
 	}
+
+	slog.Info("Second run")
 
 	// {
 	// 	"outbound": {
@@ -207,5 +215,4 @@ func main() {
 	// 	}
 	// }
 
-	fmt.Println(string(payload))
 }
