@@ -13,7 +13,7 @@ import (
 
 type LLMEvents interface {
 	OnRequest(ctx context.Context, request *LLMRequest)
-	OnResponse(ctx context.Context, request *LLMRequest, response *LLMResponse)
+	OnResponse(ctx context.Context, request *LLMRequest, response *LLMResponse, terminal bool)
 	OnRequestError(ctx context.Context, request *LLMRequest, err error)
 }
 
@@ -32,7 +32,7 @@ func NewNoopAgentEvents() *NoopAgentEvents {
 }
 
 func (e *NoopAgentEvents) OnRequest(ctx context.Context, request *LLMRequest) {}
-func (e *NoopAgentEvents) OnResponse(ctx context.Context, request *LLMRequest, response *LLMResponse) {
+func (e *NoopAgentEvents) OnResponse(ctx context.Context, request *LLMRequest, response *LLMResponse, terminal bool) {
 }
 func (e *NoopAgentEvents) OnRequestError(ctx context.Context, request *LLMRequest, err error) {}
 func (e *NoopAgentEvents) OnToolError(ctx context.Context, toolCall *tools.ToolCall, attempt int, err error) {
@@ -64,7 +64,7 @@ func (e *LogAgentEvents) OnRequest(ctx context.Context, request *LLMRequest) {
 	}
 }
 
-func (e *LogAgentEvents) OnResponse(ctx context.Context, request *LLMRequest, response *LLMResponse) {
+func (e *LogAgentEvents) OnResponse(ctx context.Context, request *LLMRequest, response *LLMResponse, terminal bool) {
 	for _, message := range response.Messages {
 		if msg := printMessage(message, false); msg != "" {
 			e.logger.Info("message", "message", msg)
@@ -147,9 +147,9 @@ func (e *MultiplexEvents) OnRequest(ctx context.Context, request *LLMRequest) {
 	}
 }
 
-func (e *MultiplexEvents) OnResponse(ctx context.Context, request *LLMRequest, response *LLMResponse) {
+func (e *MultiplexEvents) OnResponse(ctx context.Context, request *LLMRequest, response *LLMResponse, terminal bool) {
 	for _, event := range e.events {
-		event.OnResponse(ctx, request, response)
+		event.OnResponse(ctx, request, response, terminal)
 	}
 }
 

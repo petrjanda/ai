@@ -108,7 +108,7 @@ func (a *Agent) Invoke(ctx context.Context, request *ai.LLMRequest) (*ai.LLMResp
 
 		// Return usage 'to-date' rather than just the last response's usage
 		response.SetUsage(a.totalUsage)
-		a.events.OnResponse(ctx, request, response)
+		a.events.OnResponse(ctx, request, response, false)
 
 		req := request.Clone(
 			ai.WithHistory(request.History.Append(response.Messages...)),
@@ -124,7 +124,7 @@ func (a *Agent) Invoke(ctx context.Context, request *ai.LLMRequest) (*ai.LLMResp
 
 	// Return usage 'to-date' rather than just the last response's usage
 	response.SetUsage(a.totalUsage)
-	a.events.OnResponse(ctx, request, response)
+	a.events.OnResponse(ctx, request, response, true)
 
 	return response, nil
 }

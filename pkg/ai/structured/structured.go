@@ -222,7 +222,7 @@ func (s *StructuredRetriable) Retry(ctx context.Context, attempt int) (*ai.LLMRe
 	}
 
 	payload := ai.NewLLMResponse(ai.NewAssistantMessage(string(result)))
-	s.events.OnResponse(ctx, s.request, payload)
+	s.events.OnResponse(ctx, s.request, payload, true)
 
 	return payload, nil
 }

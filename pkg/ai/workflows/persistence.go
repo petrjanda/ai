@@ -68,6 +68,15 @@ func StorageFrom(ctx context.Context) (Storage, bool) {
 // TASK PERSISTENCE
 //
 
+func saveTask(ctx context.Context, id string, response *ai.LLMResponse) (*ai.LLMResponse, error) {
+	storage, ok := StorageFrom(ctx)
+	if !ok {
+		return response, nil
+	}
+
+	return response, storage.Store(ctx, id, response)
+}
+
 func loadTask(ctx context.Context, id string) (*ai.LLMResponse, bool) {
 	storage, ok := StorageFrom(ctx)
 	if !ok {
@@ -86,15 +95,6 @@ func loadTask(ctx context.Context, id string) (*ai.LLMResponse, bool) {
 	return response.(*ai.LLMResponse), true
 }
 
-func saveTask(ctx context.Context, id string, response *ai.LLMResponse) (*ai.LLMResponse, error) {
-	storage, ok := StorageFrom(ctx)
-	if !ok {
-		return response, nil
-	}
-
-	return response, storage.Store(ctx, id, response)
-}
-
 //
 // AGENT TASK PERSISTENCE
 //
@@ -109,6 +109,16 @@ func NewAgentTaskState(response *ai.LLMResponse, terminal bool) *AgentTaskState 
 		Response: response,
 		Terminal: terminal,
 	}
+}
+
+func saveAgentTask(ctx context.Context, id string, response *ai.LLMResponse, terminal bool) (*ai.LLMResponse, error) {
+	storage, ok := StorageFrom(ctx)
+	if !ok {
+		return response, nil
+	}
+
+	state := NewAgentTaskState(response, terminal)
+	return response, storage.Store(ctx, id, state)
 }
 
 func loadAgentTask(ctx context.Context, id string) (*AgentTaskState, bool) {
@@ -134,15 +144,7 @@ func loadAgentTask(ctx context.Context, id string) (*AgentTaskState, bool) {
 	return state, true
 }
 
-func saveAgentTask(ctx context.Context, id string, response *ai.LLMResponse, terminal bool) (*ai.LLMResponse, error) {
-	storage, ok := StorageFrom(ctx)
-	if !ok {
-		return response, nil
-	}
-
-	state := NewAgentTaskState(response, terminal)
-	return response, storage.Store(ctx, id, state)
-}
+// Agent async storage hook
 
 type AgentStorageHook struct {
 	*ai.NoopAgentEvents
@@ -153,12 +155,12 @@ func NewAgentStorageHook(id string) *AgentStorageHook {
 	return &AgentStorageHook{NoopAgentEvents: ai.NewNoopAgentEvents(), id: id}
 }
 
-func (h *AgentStorageHook) OnResponse(ctx context.Context, request *ai.LLMRequest, response *ai.LLMResponse) {
+func (h *AgentStorageHook) OnResponse(ctx context.Context, request *ai.LLMRequest, response *ai.LLMResponse, terminal bool) {
 	saved := ai.
-		NewLLMResponse(append(request.History, response.Messages...)...).
-		SetUsage(response.Usage)
+		NewLLMResponse(append(request.History, response.Messages...)...). // store entire history of agent state (current request + current response)
+		SetUsage(response.Usage)                                          // remember past usage
 
-	saveAgentTask(ctx, h.id, saved, len(response.ToolCalls()) == 0)
+	saveAgentTask(ctx, h.id, saved, terminal)
 }
 
 //
