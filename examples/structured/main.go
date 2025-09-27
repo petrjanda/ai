@@ -45,7 +45,7 @@ func main() {
 
 	prompt := "Generate flight from Asia to US."
 	confirmations, err := workflows.Typed[Flight](formatter).
-		Invoke(ctx, litellm, ai.NewHistory(ai.NewUserMessage(prompt)))
+		InvokeTyped(ctx, litellm, ai.NewHistory(ai.NewUserMessage(prompt)))
 
 	if err != nil {
 		panic(err)

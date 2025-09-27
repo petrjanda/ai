@@ -103,6 +103,7 @@ func (a *Agent) Invoke(ctx context.Context, request *ai.LLMRequest) (*ai.LLMResp
 		req := request.Clone(
 			ai.WithHistory(request.History.Append(response.Messages...)),
 		)
+
 		return a.Invoke(ctx, req)
 	}
 

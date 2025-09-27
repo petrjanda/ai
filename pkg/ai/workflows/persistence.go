@@ -7,12 +7,12 @@ import (
 )
 
 type StorageProvider interface {
-	Storage(ctx context.Context, id string) Storage
+	Storage(ctx context.Context, workflowId string) Storage
 }
 
 type Storage interface {
-	Store(ctx context.Context, id string, data any) error
-	Load(ctx context.Context, id string) (any, error)
+	Store(ctx context.Context, itemId string, data any) error
+	Load(ctx context.Context, itemId string) (any, error)
 }
 
 type MemoryStorageProvider struct {
@@ -64,6 +64,10 @@ func StorageFrom(ctx context.Context) (Storage, bool) {
 	return s, true
 }
 
+//
+// TASK PERSISTENCE
+//
+
 func loadTask(ctx context.Context, id string) (*ai.LLMResponse, bool) {
 	storage, ok := StorageFrom(ctx)
 	if !ok {
@@ -90,6 +94,10 @@ func saveTask(ctx context.Context, id string, response *ai.LLMResponse) (*ai.LLM
 
 	return response, storage.Store(ctx, id, response)
 }
+
+//
+// AGENT TASK PERSISTENCE
+//
 
 type AgentTaskState struct {
 	Response *ai.LLMResponse
@@ -152,6 +160,10 @@ func (h *AgentStorageHook) OnResponse(ctx context.Context, request *ai.LLMReques
 
 	saveAgentTask(ctx, h.id, saved, len(response.ToolCalls()) == 0)
 }
+
+//
+// WORK PERSISTENCE
+//
 
 func loadWork[T any](ctx context.Context, id string) (*T, bool) {
 	storage, ok := StorageFrom(ctx)

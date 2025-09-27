@@ -137,17 +137,10 @@ var formatter = workflows.NewStructuredTask[Itinerary](
 )
 
 func bookFlights(ctx context.Context, litellm ai.LLM, prompt string) (*Itinerary, error) {
-	response, err := travelAgent.
-		Invoke(ctx, litellm, ai.NewHistory(
+	return workflows.Typed[Itinerary](travelAgent.Pipe(formatter)).
+		InvokeTyped(ctx, litellm, ai.NewHistory(
 			ai.NewUserMessage(prompt),
 		))
-
-	if err != nil {
-		return nil, err
-	}
-
-	return workflows.Typed[Itinerary](formatter).
-		Invoke(ctx, litellm, response.Messages)
 }
 
 func main() {

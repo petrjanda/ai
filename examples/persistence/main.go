@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
+	"time"
 
 	"github.com/getsynq/cloud/ai-data-sre/examples"
 	"github.com/getsynq/cloud/ai-data-sre/pkg/ai"
@@ -165,6 +166,9 @@ func main() {
 	prompt := "I want to book a flight to Tokyo, 1st Oct and back 8th Oct"
 
 	{
+
+		ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
+		defer cancel()
 		confirmations, err := bookFlights.
 			Invoke(ctx, litellm, &prompt)
 
@@ -181,6 +185,8 @@ func main() {
 	}
 
 	slog.Info("First run")
+
+	ctx = workflows.WithStorage(ctx, memory.Storage("travel-2"))
 
 	{
 		confirmations, err := bookFlights.
